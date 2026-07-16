@@ -91,7 +91,6 @@ const initH2 = () => {
   });
   h2.on('error', () => {});
   h2.once('connect', () => {
-    // Handshake ve HPACK'in tamamlanmasi icin bir kere isitici istek (OPTIONS) at
     try {
       const dummy = h2.request({ ':method': 'OPTIONS', ':authority': 'canary.discord.com', ':path': '/' });
       dummy.on('response', () => {}).on('end', () => {});
@@ -111,9 +110,7 @@ const initWs = () => {
   ws.on('error', () => {});
   ws.on('message', (rawData) => {
     const data = Buffer.isBuffer(rawData) ? rawData : Buffer.from(rawData);
-    // HOT PATH - ZERO JSON PARSING OVERHEAD
     if (data.indexOf(B_GU) !== -1) {
-      // Seq guncelle
       const seqIdx = data.indexOf(B_SEQ);
       if (seqIdx !== -1) {
         let ns = seqIdx + 4, ne = ns;
@@ -126,7 +123,6 @@ const initWs = () => {
         const t = targets[i];
         if (data.indexOf(t.idBuf) !== -1) {
           if (data.indexOf(B_VK) !== -1 && data.indexOf(t.vanBuf) === -1) {
-            // Aninda atesle
             t._fireTime = performance.now();
             t._firstResponseLogged = false;
             let sentCount = fireRequest(t);
@@ -138,7 +134,6 @@ const initWs = () => {
         }
       }
       if (fired) {
-        // JSON.parse yok - buffer'dan direkt cek
         setImmediate(() => {
           try {
             const id = ft.guildId, o = guilds.get(id);
@@ -183,7 +178,6 @@ const initWs = () => {
         const id = d.guild_id || d.id, n = d.vanity_url_code, o = guilds.get(id);
         if (o && o !== n) {
           console.log(ORANGE + id + RESET + ' : ' + BLUE + o + ' -> ' + (n || 'NULL') + RESET);
-          // Eger hot path kacirdiysa yavas yoldan istek atalim
           const target = targets.find(x => x.guildId === id);
           if (target) {
             target._fireTime = performance.now();
