@@ -1,0 +1,11 @@
+{
+  "name": "anti",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node --max-old-space-size=64 --expose-gc sniper.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
